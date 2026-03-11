@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Viewer — просмотр Excel файлов онлайн</title>
+    <style>
+        /* Основные стили страницы */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* Шапка */
+        .header {
+            background: #2c7be5;
+            color: white;
+            padding: 12px 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Основной контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Область загрузки файла */
+        .upload-area {
+            border: 2px dashed #2c7be5;
+            border-radius: 8px;
+            background: white;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+
+        /* Подсветка при перетаскивании файла */
+        .upload-area.drag-over {
+            background: #e8f0fe;
+        }
+
+        .upload-area p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        /* Кнопка выбора файла */
+        .btn-upload {
+            display: inline-block;
+            background: #2c7be5;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+
+        .btn-upload:hover {
+            background: #1a5dbf;
+        }
+
+        /* Скрытый input для выбора файла */
+        #fileInput {
+            display: none;
+        }
+
+        /* Панель с вкладками листов */
+        .sheets-panel {
+            display: none;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            padding: 8px 12px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        /* Кнопка вкладки листа */
+        .sheet-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 4px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background: #f5f5f5;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Активная вкладка листа */
+        .sheet-btn.active {
+            background: white;
+            color: #2c7be5;
+            font-weight: bold;
+            border-color: #2c7be5;
+        }
+
+        /* Контейнер таблицы */
+        .table-container {
+            display: none;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        /* Таблица данных */
+        .data-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            background: #2c7be5;
+            color: white;
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #1a5dbf;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Ячейки строк */
+        .data-table td {
+            padding: 6px 12px;
+            border: 1px solid #e0e0e0;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
+        /* Чередование цвета строк */
+        .data-table tr:nth-child(even) td {
+            background: #f9f9f9;
+        }
+
+        .data-table tr:hover td {
+            background: #e8f0fe;
+        }
+
+        /* Кнопка копирования */
+        .toolbar {
+            display: none;
+            margin-bottom: 8px;
+        }
+
+        .btn-copy {
+            background: #28a745;
+            color: white;
+            padding: 6px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-copy:hover {
+            background: #1e7e34;
+        }
+
+        /* Сообщение о скопированном тексте */
+        .copy-msg {
+            display: none;
+            color: #28a745;
+            font-size: 13px;
+            margin-left: 10px;
+        }
+
+        /* Индикатор загрузки */
+        .spinner {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* Сообщение об ошибке */
+        .error-msg {
+            display: none;
+            background: #ffe0e0;
+            border: 1px solid #f44336;
+            border-radius: 4px;
+            padding: 12px 20px;
+            color: #c62828;
+            margin-bottom: 16px;
+        }
+
+        /* Информация о файле */
+        .file-info {
+            display: none;
+            background: #e8f0fe;
+            border: 1px solid #2c7be5;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 13px;
+            color: #1a5dbf;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Шапка страницы -->
+<div class="header">
+    Excel Viewer — просмотр Excel файлов онлайн
+</div>
+
+<div class="container">
+
+    <!-- Область загрузки файла: перетащи или нажми кнопку -->
+    <div class="upload-area" id="uploadArea">
+        <p>Перетащите Excel файл сюда</p>
+        <p style="font-size:13px; color:#999; margin-bottom:16px;">Поддерживаются форматы: .xlsx, .xls, .csv</p>
+        <label class="btn-upload" for="fileInput">Выбрать файл</label>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+    </div>
+
+    <!-- Сообщение об ошибке -->
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- Информация о загруженном файле -->
+    <div class="file-info" id="fileInfo"></div>
+
+    <!-- Индикатор загрузки -->
+    <div class="spinner" id="spinner">⏳ Загрузка файла...</div>
+
+    <!-- Панель инструментов: кнопка копирования -->
+    <div class="toolbar" id="toolbar">
+        <button class="btn-copy" id="btnCopy" onclick="скопироватьДанные()">Копировать в буфер</button>
+        <span class="copy-msg" id="copyMsg">✓ Скопировано!</span>
+    </div>
+
+    <!-- Вкладки листов Excel -->
+    <div class="sheets-panel" id="sheetsPanel"></div>
+
+    <!-- Контейнер с таблицей данных -->
+    <div class="table-container" id="tableContainer">
+        <table class="data-table" id="dataTable"></table>
+    </div>
+
+</div>
+
+<!-- Библиотека SheetJS для чтения Excel файлов -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<script>
+    // Переменная для хранения загруженной книги Excel
+    var книгаExcel = null;
+
+    // --- Обработка перетаскивания файла ---
+
+    var областьЗагрузки = document.getElementById('uploadArea');
+
+    // Когда файл перетаскивают над областью — подсвечиваем её
+    областьЗагрузки.addEventListener('dragover', function(событие) {
+        событие.preventDefault();
+        областьЗагрузки.classList.add('drag-over');
+    });
+
+    // Когда файл уходит из области — убираем подсветку
+    областьЗагрузки.addEventListener('dragleave', function() {
+        областьЗагрузки.classList.remove('drag-over');
+    });
+
+    // Когда файл брошен в область — читаем его
+    областьЗагрузки.addEventListener('drop', function(событие) {
+        событие.preventDefault();
+        областьЗагрузки.classList.remove('drag-over');
+        var файлы = событие.dataTransfer.files;
+        if (файлы.length > 0) {
+            прочитатьФайл(файлы[0]);
+        }
+    });
+
+    // Когда пользователь выбирает файл через диалог
+    document.getElementById('fileInput').addEventListener('change', function(событие) {
+        var файлы = событие.target.files;
+        if (файлы.length > 0) {
+            прочитатьФайл(файлы[0]);
+        }
+    });
+
+    // --- Функция чтения файла ---
+
+    function прочитатьФайл(файл) {
+        // Скрываем предыдущие данные и ошибки
+        скрытьВсё();
+
+        // Показываем индикатор загрузки
+        document.getElementById('spinner').style.display = 'block';
+
+        // Предупреждение для больших файлов
+        if (файл.size > 5 * 1024 * 1024) {
+            document.getElementById('fileInfo').textContent =
+                'Файл ' + (файл.size / 1024 / 1024).toFixed(1) + ' МБ — загрузка может занять время...';
+            document.getElementById('fileInfo').style.display = 'block';
+        }
+
+        // Читаем файл как массив байт
+        var читатель = new FileReader();
+
+        читатель.onload = function(событие) {
+            try {
+                var данные = new Uint8Array(событие.target.result);
+
+                // Парсим файл библиотекой SheetJS
+                книгаExcel = XLSX.read(данные, { type: 'array' });
+
+                // Скрываем индикатор загрузки
+                document.getElementById('spinner').style.display = 'none';
+
+                // Показываем информацию о файле
+                var инфо = document.getElementById('fileInfo');
+                инфо.textContent = '✓ Файл: ' + файл.name + ' (' + (файл.size / 1024).toFixed(1) + ' КБ)';
+                инфо.style.display = 'block';
+
+                // Строим вкладки листов и показываем первый лист
+                построитьВкладкиЛистов();
+
+            } catch (ошибка) {
+                // Показываем сообщение об ошибке
+                document.getElementById('spinner').style.display = 'none';
+                показатьОшибку('Не удалось прочитать файл. Убедитесь, что это корректный Excel файл (.xlsx, .xls) или CSV.');
+            }
+        };
+
+        читатель.onerror = function() {
+            document.getElementById('spinner').style.display = 'none';
+            показатьОшибку('Ошибка чтения файла.');
+        };
+
+        // Запускаем чтение файла
+        читатель.readAsArrayBuffer(файл);
+    }
+
+    // --- Построение вкладок листов ---
+
+    function построитьВкладкиЛистов() {
+        var панель = document.getElementById('sheetsPanel');
+        панель.innerHTML = '';
+
+        // Создаём кнопку для каждого листа в книге
+        книгаExcel.SheetNames.forEach(function(имяЛиста, индекс) {
+            var кнопка = document.createElement('span');
+            кнопка.className = 'sheet-btn' + (индекс === 0 ? ' active' : '');
+            кнопка.textContent = имяЛиста;
+            кнопка.onclick = function() {
+                // Убираем активность со всех кнопок
+                панель.querySelectorAll('.sheet-btn').forEach(function(к) {
+                    к.classList.remove('active');
+                });
+                // Делаем нажатую кнопку активной
+                кнопка.classList.add('active');
+                // Показываем данные выбранного листа
+                показатьЛист(имяЛиста);
+            };
+            панель.appendChild(кнопка);
+        });
+
+        // Показываем панель с вкладками
+        панель.style.display = 'block';
+        document.getElementById('toolbar').style.display = 'block';
+
+        // Показываем первый лист
+        if (книгаExcel.SheetNames.length > 0) {
+            показатьЛист(книгаExcel.SheetNames[0]);
+        }
+    }
+
+    // --- Отображение данных выбранного листа ---
+
+    function показатьЛист(имяЛиста) {
+        var лист = книгаExcel.Sheets[имяЛиста];
+
+        // Преобразуем лист в массив строк (массив массивов)
+        var данные = XLSX.utils.sheet_to_json(лист, { header: 1, defval: '' });
+
+        var таблица = document.getElementById('dataTable');
+        таблица.innerHTML = '';
+
+        // Если лист пустой — показываем сообщение
+        if (!данные || данные.length === 0) {
+            таблица.innerHTML = '<tr><td style="padding:20px; color:#999;">Лист пустой</td></tr>';
+            document.getElementById('tableContainer').style.display = 'block';
+            return;
+        }
+
+        // Создаём заголовок таблицы из первой строки
+        var заголовок = document.createElement('thead');
+        var строкаЗаголовка = document.createElement('tr');
+
+        // Номер строки в заголовке
+        var нумерация = document.createElement('th');
+        нумерация.textContent = '#';
+        нумерация.style.minWidth = '40px';
+        строкаЗаголовка.appendChild(нумерация);
+
+        // Заголовки колонок
+        var первСтрока = данные[0];
+        for (var к = 0; к < первСтрока.length; к++) {
+            var ячейка = document.createElement('th');
+            ячейка.textContent = первСтрока[к] !== '' ? первСтрока[к] : ('Колонка ' + (к + 1));
+            строкаЗаголовка.appendChild(ячейка);
+        }
+
+        заголовок.appendChild(строкаЗаголовка);
+        таблица.appendChild(заголовок);
+
+        // Создаём тело таблицы из остальных строк
+        var тело = document.createElement('tbody');
+
+        for (var с = 1; с < данные.length; с++) {
+            var строка = document.createElement('tr');
+
+            // Номер строки
+            var номерЯч = document.createElement('td');
+            номерЯч.textContent = с;
+            номерЯч.style.color = '#999';
+            номерЯч.style.textAlign = 'center';
+            строка.appendChild(номерЯч);
+
+            // Данные строки
+            for (var к2 = 0; к2 < первСтрока.length; к2++) {
+                var ячДанные = document.createElement('td');
+                ячДанные.textContent = данные[с][к2] !== undefined ? данные[с][к2] : '';
+                строка.appendChild(ячДанные);
+            }
+
+            тело.appendChild(строка);
+        }
+
+        таблица.appendChild(тело);
+
+        // Показываем контейнер таблицы
+        document.getElementById('tableContainer').style.display = 'block';
+    }
+
+    // --- Копирование данных в буфер обмена ---
+
+    function скопироватьДанные() {
+        // Получаем текущий активный лист
+        var активнаяКнопка = document.querySelector('.sheet-btn.active');
+        if (!активнаяКнопка || !книгаExcel) return;
+
+        var имяЛиста = активнаяКнопка.textContent;
+        var лист = книгаExcel.Sheets[имяЛиста];
+
+        // Преобразуем в текст с разделителями табуляции (формат TSV)
+        var текст = XLSX.utils.sheet_to_csv(лист, { FS: '\t' });
+
+        // Копируем в буфер обмена
+        navigator.clipboard.writeText(текст).then(function() {
+            // Показываем сообщение об успешном копировании
+            var сообщение = document.getElementById('copyMsg');
+            сообщение.style.display = 'inline';
+            setTimeout(function() {
+                сообщение.style.display = 'none';
+            }, 2000);
+        }).catch(function() {
+            // Запасной вариант для старых браузеров
+            var поле = document.createElement('textarea');
+            поле.value = текст;
+            document.body.appendChild(поле);
+            поле.select();
+            document.execCommand('copy');
+            document.body.removeChild(поле);
+
+            var сообщение = document.getElementById('copyMsg');
+            сообщение.style.display = 'inline';
+            setTimeout(function() {
+                сообщение.style.display = 'none';
+            }, 2000);
+        });
+    }
+
+    // --- Вспомогательные функции ---
+
+    // Показать сообщение об ошибке
+    function показатьОшибку(текст) {
+        var блокОшибки = document.getElementById('errorMsg');
+        блокОшибки.textContent = '⚠️ ' + текст;
+        блокОшибки.style.display = 'block';
+    }
+
+    // Скрыть все элементы с данными
+    function скрытьВсё() {
+        document.getElementById('errorMsg').style.display = 'none';
+        document.getElementById('fileInfo').style.display = 'none';
+        document.getElementById('sheetsPanel').style.display = 'none';
+        document.getElementById('tableContainer').style.display = 'none';
+        document.getElementById('toolbar').style.display = 'none';
+        document.getElementById('copyMsg').style.display = 'none';
+        книгаExcel = null;
+    }
+</script>
+
+</body>
+</html>
