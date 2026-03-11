@@ -73,6 +73,66 @@
             background: #1a5dbf;
         }
 
+        /* Кнопка ввода URL */
+        .btn-url {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+            margin-left: 10px;
+        }
+
+        .btn-url:hover {
+            background: #545b62;
+        }
+
+        /* Область ввода URL */
+        .url-input-area {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .url-input-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .url-input-field {
+            width: 400px;
+            max-width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #2c7be5;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .url-input-field:focus {
+            border-color: #1a5dbf;
+            box-shadow: 0 0 0 2px rgba(44, 123, 229, 0.2);
+        }
+
+        .btn-load-url {
+            background: #2c7be5;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-load-url:hover {
+            background: #1a5dbf;
+        }
+
         /* Скрытый input для выбора файла */
         #fileInput {
             display: none;
@@ -234,6 +294,15 @@
         <p style="font-size:13px; color:#999; margin-bottom:16px;">Поддерживаются форматы: .xlsx, .xls, .csv</p>
         <label class="btn-upload" for="fileInput">Выбрать файл</label>
         <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+        <button class="btn-url" onclick="переключитьВводURL()">Ввести URL</button>
+        <div class="url-input-area" id="urlInputArea">
+            <div class="url-input-row">
+                <input type="text" class="url-input-field" id="urlInput"
+                    placeholder="https://example.com/file.xlsx"
+                    onkeydown="if(event.key==='Enter') загрузитьПоURL()">
+                <button class="btn-load-url" onclick="загрузитьПоURL()">Открыть</button>
+            </div>
+        </div>
     </div>
 
     <!-- Сообщение об ошибке -->
@@ -494,6 +563,66 @@
         });
     }
 
+    // --- Загрузка файла по URL ---
+
+    // Переключить видимость поля ввода URL
+    function переключитьВводURL() {
+        var область = document.getElementById('urlInputArea');
+        if (область.style.display === 'block') {
+            область.style.display = 'none';
+        } else {
+            область.style.display = 'block';
+            document.getElementById('urlInput').focus();
+        }
+    }
+
+    // Загрузить Excel файл по URL
+    function загрузитьПоURL() {
+        var url = document.getElementById('urlInput').value.trim();
+        if (!url) {
+            показатьОшибку('Введите URL файла Excel.');
+            return;
+        }
+        загрузитьФайлПоURL(url);
+    }
+
+    // Основная функция загрузки файла по URL через fetch
+    function загрузитьФайлПоURL(url) {
+        скрытьВсё();
+        document.getElementById('spinner').style.display = 'block';
+
+        fetch(url)
+            .then(function(ответ) {
+                if (!ответ.ok) {
+                    throw new Error('HTTP ' + ответ.status + ': ' + ответ.statusText);
+                }
+                return ответ.arrayBuffer();
+            })
+            .then(function(буфер) {
+                try {
+                    var данные = new Uint8Array(буфер);
+                    книгаExcel = XLSX.read(данные, { type: 'array' });
+
+                    document.getElementById('spinner').style.display = 'none';
+
+                    // Извлекаем имя файла из URL
+                    var имяФайла = url.split('/').pop().split('?')[0] || url;
+                    var инфо = document.getElementById('fileInfo');
+                    инфо.textContent = '✓ Файл загружен: ' + имяФайла;
+                    инфо.style.display = 'block';
+
+                    построитьВкладкиЛистов();
+                } catch (ошибка) {
+                    document.getElementById('spinner').style.display = 'none';
+                    показатьОшибку('Не удалось прочитать файл по URL. Убедитесь, что это корректный Excel файл (.xlsx, .xls) или CSV.');
+                }
+            })
+            .catch(function(ошибка) {
+                document.getElementById('spinner').style.display = 'none';
+                показатьОшибку('Ошибка загрузки файла по URL: ' + ошибка.message + '. Убедитесь, что сервер разрешает CORS-запросы.');
+            });
+    }
+
     // --- Вспомогательные функции ---
 
     // Показать сообщение об ошибке
@@ -513,6 +642,17 @@
         document.getElementById('copyMsg').style.display = 'none';
         книгаExcel = null;
     }
+
+    // --- Автозагрузка файла из параметра URL страницы ---
+
+    // Проверяем параметр ?file=... при загрузке страницы
+    (function() {
+        var параметры = new URLSearchParams(window.location.search);
+        var urlФайла = параметры.get('file');
+        if (urlФайла) {
+            загрузитьФайлПоURL(urlФайла);
+        }
+    })();
 </script>
 
 </body>
