@@ -42,8 +42,23 @@
             padding: 40px;
             text-align: center;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, max-height 0.3s ease, padding 0.3s ease;
             margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        /* Свёрнутое состояние области загрузки */
+        .upload-area.collapsed {
+            padding: 12px 40px;
+            cursor: default;
+        }
+
+        .upload-area.collapsed .upload-content {
+            display: none;
+        }
+
+        .upload-content {
+            transition: opacity 0.2s;
         }
 
         /* Подсветка при перетаскивании файла */
@@ -90,6 +105,39 @@
             background: #545b62;
         }
 
+        /* Кнопка свернуть/развернуть */
+        .btn-collapse {
+            display: inline-block;
+            background: #17a2b8;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+            margin-left: 10px;
+        }
+
+        .btn-collapse:hover {
+            background: #138496;
+        }
+
+        /* Заголовок для свёрнутого состояния */
+        .collapsed-header {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .upload-area.collapsed .collapsed-header {
+            display: flex;
+        }
+
+        .collapsed-title {
+            font-size: 14px;
+            color: #666;
+        }
+
         /* Область ввода URL */
         .url-input-area {
             display: none;
@@ -133,9 +181,92 @@
             background: #1a5dbf;
         }
 
+        /* Поле с полным URL */
+        .full-url-display {
+            display: none;
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #e8f0fe;
+            border: 1px solid #2c7be5;
+            border-radius: 4px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .full-url-label {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .full-url-link {
+            color: #2c7be5;
+            text-decoration: none;
+        }
+
+        .full-url-link:hover {
+            text-decoration: underline;
+        }
+
         /* Скрытый input для выбора файла */
         #fileInput {
             display: none;
+        }
+
+        /* Панель поиска и фильтров */
+        .search-panel {
+            display: none;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            border-color: #2c7be5;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(44, 123, 229, 0.2);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+
+        .search-stats {
+            font-size: 12px;
+            color: #666;
+            margin-left: auto;
         }
 
         /* Панель с вкладками листов */
@@ -187,6 +318,7 @@
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
+            table-layout: fixed;
         }
 
         .data-table th {
@@ -199,6 +331,24 @@
             position: sticky;
             top: 0;
             z-index: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+
+        /* Изменение размера колонок */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            cursor: col-resize;
+            background: transparent;
+        }
+
+        .resize-handle:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* Ячейки строк */
@@ -206,7 +356,9 @@
             padding: 6px 12px;
             border: 1px solid #e0e0e0;
             white-space: nowrap;
-            min-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 50px;
         }
 
         /* Чередование цвета строк */
@@ -218,10 +370,60 @@
             background: #e8f0fe;
         }
 
-        /* Кнопка копирования */
+        /* Скрытие строк при фильтрации */
+        .data-table tr.hidden-row {
+            display: none;
+        }
+
+        /* Подсветка поиска */
+        .highlight-search {
+            background: #fff59d;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* Подсветка ячеек с формулами */
+        .formula-cell {
+            background: #e3f2fd !important;
+            border-left: 3px solid #2196f3 !important;
+        }
+
+        .formula-cell::before {
+            content: 'ƒ';
+            font-size: 10px;
+            color: #2196f3;
+            margin-right: 4px;
+            font-weight: bold;
+        }
+
+        /* Редактируемая ячейка */
+        .data-table td.editable {
+            cursor: text;
+        }
+
+        .data-table td.editing {
+            padding: 0;
+            background: white !important;
+        }
+
+        .cell-editor {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #2c7be5;
+            padding: 5px 11px;
+            font-size: 13px;
+            font-family: Arial, sans-serif;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        /* Кнопка копирования и панель инструментов */
         .toolbar {
             display: none;
             margin-bottom: 8px;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .btn-copy {
@@ -238,12 +440,56 @@
             background: #1e7e34;
         }
 
+        .btn-edit {
+            background: #ffc107;
+            color: #212529;
+            padding: 6px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-edit:hover {
+            background: #e0a800;
+        }
+
+        .btn-edit.active {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-download {
+            background: #17a2b8;
+            color: white;
+            padding: 6px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-download:hover {
+            background: #138496;
+        }
+
         /* Сообщение о скопированном тексте */
         .copy-msg {
             display: none;
             color: #28a745;
             font-size: 13px;
             margin-left: 10px;
+        }
+
+        /* Режим редактирования */
+        .edit-mode-indicator {
+            display: none;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #856404;
         }
 
         /* Индикатор загрузки */
@@ -277,6 +523,29 @@
             color: #1a5dbf;
             margin-bottom: 12px;
         }
+
+        /* Легенда формул */
+        .legend {
+            display: none;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 16px;
+        }
+
+        .legend-formula {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body>
@@ -290,18 +559,32 @@
 
     <!-- Область загрузки файла: перетащи или нажми кнопку -->
     <div class="upload-area" id="uploadArea">
-        <p>Перетащите Excel файл сюда</p>
-        <p style="font-size:13px; color:#999; margin-bottom:16px;">Поддерживаются форматы: .xlsx, .xls, .csv</p>
-        <label class="btn-upload" for="fileInput">Выбрать файл</label>
-        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
-        <button class="btn-url" onclick="переключитьВводURL()">Ввести URL</button>
-        <div class="url-input-area" id="urlInputArea">
-            <div class="url-input-row">
-                <input type="text" class="url-input-field" id="urlInput"
-                    placeholder="https://example.com/file.xlsx"
-                    onkeydown="if(event.key==='Enter') загрузитьПоURL()">
-                <button class="btn-load-url" onclick="загрузитьПоURL()">Открыть</button>
+        <!-- Содержимое при развёрнутом состоянии -->
+        <div class="upload-content" id="uploadContent">
+            <p>Перетащите Excel файл сюда</p>
+            <p style="font-size:13px; color:#999; margin-bottom:16px;">Поддерживаются форматы: .xlsx, .xls, .csv</p>
+            <label class="btn-upload" for="fileInput">Выбрать файл</label>
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+            <button class="btn-url" onclick="переключитьВводURL()">Ввести URL</button>
+            <button class="btn-collapse" onclick="переключитьСворачивание()">Свернуть</button>
+            <div class="url-input-area" id="urlInputArea">
+                <div class="url-input-row">
+                    <input type="text" class="url-input-field" id="urlInput"
+                        placeholder="https://example.com/file.xlsx"
+                        oninput="обновитьПолныйURL()"
+                        onkeydown="if(event.key==='Enter') загрузитьПоURL()">
+                    <button class="btn-load-url" onclick="загрузитьПоURL()">Открыть</button>
+                </div>
+                <div class="full-url-display" id="fullUrlDisplay">
+                    <div class="full-url-label">Полная ссылка для открытия файла:</div>
+                    <a class="full-url-link" id="fullUrlLink" href="#" target="_blank"></a>
+                </div>
             </div>
+        </div>
+        <!-- Заголовок при свёрнутом состоянии -->
+        <div class="collapsed-header">
+            <span class="collapsed-title" id="collapsedTitle">Файл не загружен</span>
+            <button class="btn-collapse" onclick="переключитьСворачивание()">Развернуть</button>
         </div>
     </div>
 
@@ -314,10 +597,40 @@
     <!-- Индикатор загрузки -->
     <div class="spinner" id="spinner">⏳ Загрузка файла...</div>
 
-    <!-- Панель инструментов: кнопка копирования -->
+    <!-- Панель поиска и фильтров -->
+    <div class="search-panel" id="searchPanel">
+        <div class="search-row">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="Поиск по таблице..."
+                oninput="выполнитьПоиск()">
+            <div class="filter-group">
+                <span class="filter-label">Колонка:</span>
+                <select class="filter-select" id="columnFilter" onchange="выполнитьПоиск()">
+                    <option value="all">Все колонки</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label style="font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="formulaFilter" onchange="выполнитьПоиск()">
+                    Только с формулами
+                </label>
+            </div>
+            <span class="search-stats" id="searchStats"></span>
+        </div>
+    </div>
+
+    <!-- Легенда -->
+    <div class="legend" id="legend">
+        <span class="legend-item"><span class="legend-formula"></span> Ячейка с формулой</span>
+    </div>
+
+    <!-- Панель инструментов: кнопка копирования, редактирования, скачивания -->
     <div class="toolbar" id="toolbar">
         <button class="btn-copy" id="btnCopy" onclick="скопироватьДанные()">Копировать в буфер</button>
+        <button class="btn-edit" id="btnEdit" onclick="переключитьРежимРедактирования()">Edit</button>
+        <button class="btn-download" id="btnDownload" onclick="скачатьФайл()">Скачать</button>
         <span class="copy-msg" id="copyMsg">✓ Скопировано!</span>
+        <span class="edit-mode-indicator" id="editModeIndicator">Режим редактирования: кликните на ячейку для изменения</span>
     </div>
 
     <!-- Вкладки листов Excel -->
@@ -330,12 +643,23 @@
 
 </div>
 
-<!-- Библиотека SheetJS для чтения Excel файлов -->
+<!-- Библиотека SheetJS для чтения и записи Excel файлов -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 <script>
     // Переменная для хранения загруженной книги Excel
     var книгаExcel = null;
+    // Режим редактирования
+    var режимРедактирования = false;
+    // Текущее имя файла
+    var текущееИмяФайла = 'file.xlsx';
+    // Флаг изменения данных
+    var данныеИзменены = false;
+    // Хранение информации о формулах
+    var формулыЛиста = {};
+
+    // --- Базовый URL страницы для формирования ссылок ---
+    var базовыйURL = window.location.origin + window.location.pathname;
 
     // --- Обработка перетаскивания файла ---
 
@@ -344,7 +668,9 @@
     // Когда файл перетаскивают над областью — подсвечиваем её
     областьЗагрузки.addEventListener('dragover', function(событие) {
         событие.preventDefault();
-        областьЗагрузки.classList.add('drag-over');
+        if (!областьЗагрузки.classList.contains('collapsed')) {
+            областьЗагрузки.classList.add('drag-over');
+        }
     });
 
     // Когда файл уходит из области — убираем подсветку
@@ -356,9 +682,11 @@
     областьЗагрузки.addEventListener('drop', function(событие) {
         событие.preventDefault();
         областьЗагрузки.classList.remove('drag-over');
-        var файлы = событие.dataTransfer.files;
-        if (файлы.length > 0) {
-            прочитатьФайл(файлы[0]);
+        if (!областьЗагрузки.classList.contains('collapsed')) {
+            var файлы = событие.dataTransfer.files;
+            if (файлы.length > 0) {
+                прочитатьФайл(файлы[0]);
+            }
         }
     });
 
@@ -370,11 +698,38 @@
         }
     });
 
+    // --- Функция сворачивания/разворачивания области загрузки ---
+
+    function переключитьСворачивание() {
+        var область = document.getElementById('uploadArea');
+        область.classList.toggle('collapsed');
+    }
+
+    // --- Функция обновления полного URL ---
+
+    function обновитьПолныйURL() {
+        var urlВвода = document.getElementById('urlInput').value.trim();
+        var блокПолногоURL = document.getElementById('fullUrlDisplay');
+        var ссылка = document.getElementById('fullUrlLink');
+
+        if (urlВвода) {
+            var полныйURL = базовыйURL + '?file=' + encodeURIComponent(urlВвода);
+            ссылка.href = полныйURL;
+            ссылка.textContent = полныйURL;
+            блокПолногоURL.style.display = 'block';
+        } else {
+            блокПолногоURL.style.display = 'none';
+        }
+    }
+
     // --- Функция чтения файла ---
 
     function прочитатьФайл(файл) {
         // Скрываем предыдущие данные и ошибки
         скрытьВсё();
+
+        // Сохраняем имя файла
+        текущееИмяФайла = файл.name;
 
         // Показываем индикатор загрузки
         document.getElementById('spinner').style.display = 'block';
@@ -393,8 +748,8 @@
             try {
                 var данные = new Uint8Array(событие.target.result);
 
-                // Парсим файл библиотекой SheetJS
-                книгаExcel = XLSX.read(данные, { type: 'array' });
+                // Парсим файл библиотекой SheetJS с сохранением формул
+                книгаExcel = XLSX.read(данные, { type: 'array', cellFormula: true });
 
                 // Скрываем индикатор загрузки
                 document.getElementById('spinner').style.display = 'none';
@@ -403,6 +758,12 @@
                 var инфо = document.getElementById('fileInfo');
                 инфо.textContent = '✓ Файл: ' + файл.name + ' (' + (файл.size / 1024).toFixed(1) + ' КБ)';
                 инфо.style.display = 'block';
+
+                // Обновляем заголовок свёрнутого состояния
+                document.getElementById('collapsedTitle').textContent = '✓ Файл: ' + файл.name;
+
+                // Сбрасываем флаг изменений
+                данныеИзменены = false;
 
                 // Строим вкладки листов и показываем первый лист
                 построитьВкладкиЛистов();
@@ -449,7 +810,9 @@
 
         // Показываем панель с вкладками
         панель.style.display = 'block';
-        document.getElementById('toolbar').style.display = 'block';
+        document.getElementById('toolbar').style.display = 'flex';
+        document.getElementById('searchPanel').style.display = 'block';
+        document.getElementById('legend').style.display = 'block';
 
         // Показываем первый лист
         if (книгаExcel.SheetNames.length > 0) {
@@ -462,6 +825,14 @@
     function показатьЛист(имяЛиста) {
         var лист = книгаExcel.Sheets[имяЛиста];
 
+        // Собираем информацию о формулах
+        формулыЛиста = {};
+        for (var адрес in лист) {
+            if (адрес[0] !== '!' && лист[адрес].f) {
+                формулыЛиста[адрес] = лист[адрес].f;
+            }
+        }
+
         // Преобразуем лист в массив строк (массив массивов)
         var данные = XLSX.utils.sheet_to_json(лист, { header: 1, defval: '' });
 
@@ -472,8 +843,15 @@
         if (!данные || данные.length === 0) {
             таблица.innerHTML = '<tr><td style="padding:20px; color:#999;">Лист пустой</td></tr>';
             document.getElementById('tableContainer').style.display = 'block';
+            обновитьФильтрКолонок([]);
             return;
         }
+
+        // Определяем максимальное количество колонок
+        var максКолонок = 0;
+        данные.forEach(function(строка) {
+            if (строка.length > максКолонок) максКолонок = строка.length;
+        });
 
         // Создаём заголовок таблицы из первой строки
         var заголовок = document.createElement('thead');
@@ -482,37 +860,70 @@
         // Номер строки в заголовке
         var нумерация = document.createElement('th');
         нумерация.textContent = '#';
-        нумерация.style.minWidth = '40px';
+        нумерация.style.width = '50px';
+        нумерация.style.minWidth = '50px';
         строкаЗаголовка.appendChild(нумерация);
 
         // Заголовки колонок
         var первСтрока = данные[0];
-        for (var к = 0; к < первСтрока.length; к++) {
+        var названияКолонок = [];
+        for (var к = 0; к < максКолонок; к++) {
             var ячейка = document.createElement('th');
-            ячейка.textContent = первСтрока[к] !== '' ? первСтрока[к] : ('Колонка ' + (к + 1));
+            var названиеКолонки = первСтрока[к] !== undefined && первСтрока[к] !== ''
+                ? String(первСтрока[к])
+                : ('Колонка ' + (к + 1));
+            ячейка.textContent = названиеКолонки;
+            ячейка.style.width = '120px';
+            ячейка.style.minWidth = '50px';
+            названияКолонок.push(названиеКолонки);
+
+            // Добавляем элемент для изменения размера колонки
+            var ручкаИзменения = document.createElement('div');
+            ручкаИзменения.className = 'resize-handle';
+            ручкаИзменения.dataset.col = к;
+            ячейка.appendChild(ручкаИзменения);
+
             строкаЗаголовка.appendChild(ячейка);
         }
 
         заголовок.appendChild(строкаЗаголовка);
         таблица.appendChild(заголовок);
 
+        // Обновляем фильтр колонок
+        обновитьФильтрКолонок(названияКолонок);
+
         // Создаём тело таблицы из остальных строк
         var тело = document.createElement('tbody');
 
         for (var с = 1; с < данные.length; с++) {
             var строка = document.createElement('tr');
+            строка.dataset.row = с;
 
             // Номер строки
             var номерЯч = document.createElement('td');
             номерЯч.textContent = с;
             номерЯч.style.color = '#999';
             номерЯч.style.textAlign = 'center';
+            номерЯч.style.width = '50px';
             строка.appendChild(номерЯч);
 
             // Данные строки
-            for (var к2 = 0; к2 < первСтрока.length; к2++) {
+            for (var к2 = 0; к2 < максКолонок; к2++) {
                 var ячДанные = document.createElement('td');
-                ячДанные.textContent = данные[с][к2] !== undefined ? данные[с][к2] : '';
+                var значение = данные[с][к2] !== undefined ? данные[с][к2] : '';
+                ячДанные.textContent = значение;
+                ячДанные.dataset.col = к2;
+                ячДанные.dataset.row = с;
+                ячДанные.dataset.originalValue = значение;
+
+                // Проверяем, есть ли формула в этой ячейке
+                var адресЯчейки = XLSX.utils.encode_cell({ r: с, c: к2 });
+                if (формулыЛиста[адресЯчейки]) {
+                    ячДанные.classList.add('formula-cell');
+                    ячДанные.title = 'Формула: =' + формулыЛиста[адресЯчейки];
+                    ячДанные.dataset.formula = формулыЛиста[адресЯчейки];
+                }
+
                 строка.appendChild(ячДанные);
             }
 
@@ -523,6 +934,345 @@
 
         // Показываем контейнер таблицы
         document.getElementById('tableContainer').style.display = 'block';
+
+        // Инициализируем изменение размера колонок
+        инициализироватьИзменениеРазмера();
+
+        // Обновляем режим редактирования если он активен
+        if (режимРедактирования) {
+            включитьРедактированиеЯчеек();
+        }
+
+        // Сбрасываем поиск
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchStats').textContent = '';
+    }
+
+    // --- Обновление фильтра колонок ---
+
+    function обновитьФильтрКолонок(названия) {
+        var фильтр = document.getElementById('columnFilter');
+        фильтр.innerHTML = '<option value="all">Все колонки</option>';
+        названия.forEach(function(название, индекс) {
+            var опция = document.createElement('option');
+            опция.value = индекс;
+            опция.textContent = название;
+            фильтр.appendChild(опция);
+        });
+    }
+
+    // --- Поиск и фильтрация ---
+
+    function выполнитьПоиск() {
+        var запрос = document.getElementById('searchInput').value.toLowerCase().trim();
+        var колонка = document.getElementById('columnFilter').value;
+        var толькоФормулы = document.getElementById('formulaFilter').checked;
+
+        var таблица = document.getElementById('dataTable');
+        var строки = таблица.querySelectorAll('tbody tr');
+        var найдено = 0;
+        var всего = строки.length;
+
+        строки.forEach(function(строка) {
+            var ячейки = строка.querySelectorAll('td');
+            var показать = false;
+            var естьСовпадение = false;
+
+            // Убираем предыдущую подсветку
+            ячейки.forEach(function(ячейка) {
+                var оригинал = ячейка.dataset.originalValue || '';
+                ячейка.innerHTML = '';
+                ячейка.textContent = оригинал;
+                if (ячейка.dataset.formula) {
+                    // Восстанавливаем индикатор формулы
+                }
+            });
+
+            // Проверяем каждую ячейку
+            ячейки.forEach(function(ячейка, индексЯчейки) {
+                if (индексЯчейки === 0) return; // Пропускаем номер строки
+
+                var текст = (ячейка.dataset.originalValue || '').toLowerCase();
+                var естьФормула = ячейка.classList.contains('formula-cell');
+
+                // Проверяем фильтр по формулам
+                if (толькоФормулы && !естьФормула) return;
+
+                // Проверяем фильтр по колонке
+                var индексКолонки = parseInt(ячейка.dataset.col);
+                if (колонка !== 'all' && индексКолонки !== parseInt(колонка)) return;
+
+                // Проверяем поисковый запрос
+                if (!запрос || текст.indexOf(запрос) !== -1) {
+                    if (толькоФормулы) {
+                        показать = естьФормула;
+                    } else {
+                        показать = true;
+                    }
+
+                    // Подсвечиваем совпадения
+                    if (запрос && текст.indexOf(запрос) !== -1) {
+                        естьСовпадение = true;
+                        var оригинал = ячейка.dataset.originalValue || '';
+                        var индекс = оригинал.toLowerCase().indexOf(запрос);
+                        if (индекс !== -1) {
+                            var до = оригинал.substring(0, индекс);
+                            var совпадение = оригинал.substring(индекс, индекс + запрос.length);
+                            var после = оригинал.substring(индекс + запрос.length);
+                            ячейка.innerHTML = escapeHtml(до) +
+                                '<span class="highlight-search">' + escapeHtml(совпадение) + '</span>' +
+                                escapeHtml(после);
+                        }
+                    }
+                }
+            });
+
+            if (показать) {
+                строка.classList.remove('hidden-row');
+                найдено++;
+            } else {
+                строка.classList.add('hidden-row');
+            }
+        });
+
+        // Обновляем статистику
+        var статистика = document.getElementById('searchStats');
+        if (запрос || толькоФормулы || колонка !== 'all') {
+            статистика.textContent = 'Найдено: ' + найдено + ' из ' + всего + ' строк';
+        } else {
+            статистика.textContent = '';
+        }
+    }
+
+    // Экранирование HTML
+    function escapeHtml(текст) {
+        var div = document.createElement('div');
+        div.textContent = текст;
+        return div.innerHTML;
+    }
+
+    // --- Изменение размера колонок ---
+
+    var текущаяКолонка = null;
+    var началоX = 0;
+    var начальнаяШирина = 0;
+
+    function инициализироватьИзменениеРазмера() {
+        var ручки = document.querySelectorAll('.resize-handle');
+        ручки.forEach(function(ручка) {
+            ручка.addEventListener('mousedown', начатьИзменениеРазмера);
+        });
+    }
+
+    function начатьИзменениеРазмера(событие) {
+        событие.preventDefault();
+        событие.stopPropagation();
+
+        текущаяКолонка = событие.target.parentElement;
+        началоX = событие.pageX;
+        начальнаяШирина = текущаяКолонка.offsetWidth;
+
+        document.addEventListener('mousemove', изменятьРазмер);
+        document.addEventListener('mouseup', завершитьИзменениеРазмера);
+    }
+
+    function изменятьРазмер(событие) {
+        if (!текущаяКолонка) return;
+
+        var разница = событие.pageX - началоX;
+        var новаяШирина = Math.max(50, начальнаяШирина + разница);
+        текущаяКолонка.style.width = новаяШирина + 'px';
+
+        // Также изменяем ширину ячеек в этой колонке
+        var индексКолонки = Array.from(текущаяКолонка.parentElement.children).indexOf(текущаяКолонка);
+        var таблица = document.getElementById('dataTable');
+        var строки = таблица.querySelectorAll('tbody tr');
+        строки.forEach(function(строка) {
+            var ячейка = строка.children[индексКолонки];
+            if (ячейка) {
+                ячейка.style.width = новаяШирина + 'px';
+            }
+        });
+    }
+
+    function завершитьИзменениеРазмера() {
+        текущаяКолонка = null;
+        document.removeEventListener('mousemove', изменятьРазмер);
+        document.removeEventListener('mouseup', завершитьИзменениеРазмера);
+    }
+
+    // --- Режим редактирования ---
+
+    function переключитьРежимРедактирования() {
+        режимРедактирования = !режимРедактирования;
+        var кнопка = document.getElementById('btnEdit');
+        var индикатор = document.getElementById('editModeIndicator');
+
+        if (режимРедактирования) {
+            кнопка.classList.add('active');
+            кнопка.textContent = 'Выйти из Edit';
+            индикатор.style.display = 'inline-block';
+            включитьРедактированиеЯчеек();
+        } else {
+            кнопка.classList.remove('active');
+            кнопка.textContent = 'Edit';
+            индикатор.style.display = 'none';
+            отключитьРедактированиеЯчеек();
+        }
+    }
+
+    function включитьРедактированиеЯчеек() {
+        var таблица = document.getElementById('dataTable');
+        var ячейки = таблица.querySelectorAll('tbody td');
+        ячейки.forEach(function(ячейка, индекс) {
+            // Пропускаем колонку с номерами строк
+            if (ячейка.dataset.col === undefined) return;
+
+            ячейка.classList.add('editable');
+            ячейка.addEventListener('click', начатьРедактированиеЯчейки);
+        });
+    }
+
+    function отключитьРедактированиеЯчеек() {
+        var таблица = document.getElementById('dataTable');
+        var ячейки = таблица.querySelectorAll('tbody td');
+        ячейки.forEach(function(ячейка) {
+            ячейка.classList.remove('editable');
+            ячейка.removeEventListener('click', начатьРедактированиеЯчейки);
+        });
+    }
+
+    function начатьРедактированиеЯчейки(событие) {
+        var ячейка = событие.target;
+
+        // Если уже редактируется — выходим
+        if (ячейка.classList.contains('editing')) return;
+
+        // Если это колонка номеров строк — выходим
+        if (ячейка.dataset.col === undefined) return;
+
+        ячейка.classList.add('editing');
+
+        var текущееЗначение = ячейка.dataset.originalValue || '';
+
+        var редактор = document.createElement('input');
+        редактор.type = 'text';
+        редактор.className = 'cell-editor';
+        редактор.value = текущееЗначение;
+
+        ячейка.innerHTML = '';
+        ячейка.appendChild(редактор);
+        редактор.focus();
+        редактор.select();
+
+        редактор.addEventListener('blur', function() {
+            завершитьРедактированиеЯчейки(ячейка, редактор.value);
+        });
+
+        редактор.addEventListener('keydown', function(е) {
+            if (е.key === 'Enter') {
+                редактор.blur();
+            } else if (е.key === 'Escape') {
+                завершитьРедактированиеЯчейки(ячейка, текущееЗначение);
+            }
+        });
+    }
+
+    function завершитьРедактированиеЯчейки(ячейка, новоеЗначение) {
+        ячейка.classList.remove('editing');
+
+        var староеЗначение = ячейка.dataset.originalValue || '';
+
+        // Обновляем значение
+        ячейка.dataset.originalValue = новоеЗначение;
+        ячейка.textContent = новоеЗначение;
+
+        // Если значение изменилось — обновляем данные в книге
+        if (новоеЗначение !== староеЗначение) {
+            данныеИзменены = true;
+            обновитьДанныеВКниге(ячейка);
+        }
+    }
+
+    function обновитьДанныеВКниге(ячейка) {
+        var строка = parseInt(ячейка.dataset.row);
+        var колонка = parseInt(ячейка.dataset.col);
+        var значение = ячейка.dataset.originalValue;
+
+        // Получаем текущий лист
+        var активнаяКнопка = document.querySelector('.sheet-btn.active');
+        if (!активнаяКнопка || !книгаExcel) return;
+
+        var имяЛиста = активнаяКнопка.textContent;
+        var лист = книгаExcel.Sheets[имяЛиста];
+
+        // Получаем адрес ячейки (формат A1)
+        var адрес = XLSX.utils.encode_cell({ r: строка, c: колонка });
+
+        // Обновляем значение в листе
+        if (!лист[адрес]) {
+            лист[адрес] = {};
+        }
+
+        // Определяем тип значения
+        var числовое = parseFloat(значение);
+        if (!isNaN(числовое) && значение.trim() !== '') {
+            лист[адрес] = { t: 'n', v: числовое };
+        } else {
+            лист[адрес] = { t: 's', v: значение };
+        }
+
+        // Удаляем формулу если была
+        delete лист[адрес].f;
+
+        // Убираем класс формулы
+        ячейка.classList.remove('formula-cell');
+        ячейка.title = '';
+    }
+
+    // --- Скачивание файла ---
+
+    function скачатьФайл() {
+        if (!книгаExcel) {
+            показатьОшибку('Сначала загрузите файл для скачивания.');
+            return;
+        }
+
+        try {
+            // Генерируем бинарные данные файла
+            var данныеФайла = XLSX.write(книгаExcel, {
+                bookType: 'xlsx',
+                type: 'array'
+            });
+
+            // Создаём Blob
+            var blob = new Blob([данныеФайла], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+
+            // Создаём ссылку для скачивания
+            var ссылка = document.createElement('a');
+            ссылка.href = URL.createObjectURL(blob);
+
+            // Формируем имя файла
+            var имяДляСкачивания = текущееИмяФайла;
+            if (данныеИзменены && !имяДляСкачивания.includes('_edited')) {
+                var точка = имяДляСкачивания.lastIndexOf('.');
+                if (точка > 0) {
+                    имяДляСкачивания = имяДляСкачивания.substring(0, точка) + '_edited' + имяДляСкачивания.substring(точка);
+                }
+            }
+            ссылка.download = имяДляСкачивания;
+
+            // Запускаем скачивание
+            document.body.appendChild(ссылка);
+            ссылка.click();
+            document.body.removeChild(ссылка);
+            URL.revokeObjectURL(ссылка.href);
+
+        } catch (ошибка) {
+            показатьОшибку('Ошибка при создании файла для скачивания: ' + ошибка.message);
+        }
     }
 
     // --- Копирование данных в буфер обмена ---
@@ -573,6 +1323,7 @@
         } else {
             область.style.display = 'block';
             document.getElementById('urlInput').focus();
+            обновитьПолныйURL();
         }
     }
 
@@ -591,6 +1342,9 @@
         скрытьВсё();
         document.getElementById('spinner').style.display = 'block';
 
+        // Извлекаем имя файла из URL
+        текущееИмяФайла = url.split('/').pop().split('?')[0] || 'file.xlsx';
+
         fetch(url)
             .then(function(ответ) {
                 if (!ответ.ok) {
@@ -601,15 +1355,19 @@
             .then(function(буфер) {
                 try {
                     var данные = new Uint8Array(буфер);
-                    книгаExcel = XLSX.read(данные, { type: 'array' });
+                    книгаExcel = XLSX.read(данные, { type: 'array', cellFormula: true });
 
                     document.getElementById('spinner').style.display = 'none';
 
-                    // Извлекаем имя файла из URL
-                    var имяФайла = url.split('/').pop().split('?')[0] || url;
                     var инфо = document.getElementById('fileInfo');
-                    инфо.textContent = '✓ Файл загружен: ' + имяФайла;
+                    инфо.textContent = '✓ Файл загружен: ' + текущееИмяФайла;
                     инфо.style.display = 'block';
+
+                    // Обновляем заголовок свёрнутого состояния
+                    document.getElementById('collapsedTitle').textContent = '✓ Файл: ' + текущееИмяФайла;
+
+                    // Сбрасываем флаг изменений
+                    данныеИзменены = false;
 
                     построитьВкладкиЛистов();
                 } catch (ошибка) {
@@ -639,7 +1397,18 @@
         document.getElementById('sheetsPanel').style.display = 'none';
         document.getElementById('tableContainer').style.display = 'none';
         document.getElementById('toolbar').style.display = 'none';
+        document.getElementById('searchPanel').style.display = 'none';
+        document.getElementById('legend').style.display = 'none';
         document.getElementById('copyMsg').style.display = 'none';
+        document.getElementById('editModeIndicator').style.display = 'none';
+
+        // Сбрасываем режим редактирования
+        if (режимРедактирования) {
+            режимРедактирования = false;
+            document.getElementById('btnEdit').classList.remove('active');
+            document.getElementById('btnEdit').textContent = 'Edit';
+        }
+
         книгаExcel = null;
     }
 
@@ -650,6 +1419,9 @@
         var параметры = new URLSearchParams(window.location.search);
         var urlФайла = параметры.get('file');
         if (urlФайла) {
+            // Заполняем поле ввода URL
+            document.getElementById('urlInput').value = urlФайла;
+            обновитьПолныйURL();
             загрузитьФайлПоURL(urlФайла);
         }
     })();
